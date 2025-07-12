@@ -4,13 +4,15 @@ FROM apachepulsar/pulsar:3.2.0
 # Cài thêm curl, jq nếu cần (tùy ý)
 USER root
 RUN apt-get update && apt-get install -y curl jq && rm -rf /var/lib/apt/lists/*
+
+# Tạo thư mục schema
+RUN mkdir -p /pulsar/schema
+
+# Copy files và set permissions ngay lập tức
+COPY --chmod=755 init-pulsar.sh /pulsar/init-pulsar.sh
+COPY --chmod=644 log-nginx-access.avsc /pulsar/schema/log-nginx-access.avsc
+
 USER pulsar
-
-# Copy script và schema avro vào image (hoặc mount từ ngoài cũng được)
-COPY init-pulsar.sh /pulsar/init-pulsar.sh
-COPY log-nginx-access.avsc /pulsar/schema/log-nginx-access.avsc
-
-RUN chmod +x /pulsar/init-pulsar.sh
 
 EXPOSE 6650 8080
 
