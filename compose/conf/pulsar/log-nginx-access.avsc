@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "NginxAccess",
+  "fields": [
+    {"name": "remote_addr", "type": "string"},
+    {"name": "time_iso8601", "type": "string"},
+    {"name": "request", "type": "string"},
+    {"name": "status", "type": "int"},
+    {"name": "body_bytes_sent", "type": "long"},
+    {"name": "http_referer", "type": ["null", "string"], "default": null},
+    {"name": "http_user_agent", "type": ["null", "string"], "default": null},
+    {"name": "hostname", "type": "string"}
+  ]
+}

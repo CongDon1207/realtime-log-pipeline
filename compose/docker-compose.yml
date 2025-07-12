@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  pulsar:
+    build:
+      context: ./conf/pulsar                # Thư mục chứa Dockerfile, script, schema
+    container_name: pulsar
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./schema:/pulsar/schema        # Mount folder chứa schema Avro
+    command: ["/pulsar/init-pulsar.sh"]
+
+
+  # fluent-bit:
+  #   build:
+  #     context: .        # Thư mục chứa Dockerfile, fluent-bit.conf, parsers.conf
+  #     dockerfile: Dockerfile   # Có thể bỏ qua nếu file tên mặc định
+  #   container_name: fluent-bit
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /var/log/nginx/access.log:/var/log/nginx/access.log:ro
+  #   ports:
+  #     - "2020:2020"
+  #   depends_on:
+  #     - pulsar
+  #   environment:
+  #     - TZ=Asia/Ho_Chi_Minh

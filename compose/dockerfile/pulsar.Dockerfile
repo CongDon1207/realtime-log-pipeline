@@ -1,11 +1,15 @@
 # Custom Apache Pulsar image
 FROM apachepulsar/pulsar:latest
 
-# Add custom configurations and plugins if needed
-# COPY ./conf/ /pulsar/conf/
+# Create schema directory
+RUN mkdir -p /pulsar/schema
 
-# Optionally install additional packages
-# RUN apt-get update && apt-get install -y --no-install-recommends ...
+# Copy initialization script and schema file
+COPY ../conf/pulsar/init-pulsar.sh /pulsar/init-pulsar.sh
+COPY ../conf/pulsar/log-nginx-access.avsc /pulsar/schema/log-nginx-access.avsc
+
+# Make script executable
+RUN chmod +x /pulsar/init-pulsar.sh
 
 # Expose needed ports
 EXPOSE 6650 8080
