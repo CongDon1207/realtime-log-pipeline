@@ -7,8 +7,6 @@ services:
       - "6650:6650"
       - "8081:8080"    # Thay đổi port host thành 8081
     restart: unless-stopped
-    volumes:
-      - ./schema:/pulsar/schema        # Mount folder chứa schema Avro
     command: ["/pulsar/init-pulsar.sh"]
 
 
