@@ -1,7 +1,7 @@
 # Fluent Bit with custom configuration
 FROM fluent/fluent-bit:2.2
-# Add any additional dependencies if needed
-RUN apt-get update && apt-get install -y --no-install-recommends ...
+
+
 
 # Copy file cấu hình vào image
 COPY fluent-bit.conf /fluent-bit/etc/fluent-bit.conf
