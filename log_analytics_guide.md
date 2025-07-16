@@ -49,7 +49,7 @@
 
 ```
 log-analytics-flink/
-├─ .env.example              # mẫu biến môi trường (PULSAR_URL, MINIO_ENDPOINT, FLINK_JOB_NAME...)
+├─ .env.example              # mẫu biến môi trường (PULSAR_SERVICE_URL, MINIO_ENDPOINT, FLINK_JOB_NAME...)
 ├─ compose/                  # Docker Compose configs
 │  ├─ docker-compose.yml     # build & run services chung
 │  └─ conf/                  # các file cấu hình dịch vụ
