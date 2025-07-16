@@ -1,5 +1,15 @@
 # Fluent Bit with custom configuration
+### Stage 1: build Pulsar output plugin from source
+FROM golang:1.22 AS builder
+
+WORKDIR /src
+RUN git clone --depth 1 https://github.com/transnano/fluent-bit-go-pulsar-output . \
+    && go build -buildmode=c-shared -o out_pulsar.so .
+
+### Stage 2: final Fluent Bit image
 FROM fluent/fluent-bit:2.2
+
+COPY --from=builder /src/out_pulsar.so /fluent-bit/out_pulsar.so
 
 
 
@@ -14,4 +24,4 @@ EXPOSE 2020
 # ENTRYPOINT ["/fluent-bit/bin/fluent-bit"]
 
 # Default command with our config
-CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+CMD ["/fluent-bit/bin/fluent-bit", "-e", "/fluent-bit/out_pulsar.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]

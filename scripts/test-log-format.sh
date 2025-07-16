@@ -3,7 +3,8 @@
 # Quick test script to generate a few sample log entries
 # Usage: ./test-log-format.sh
 
-LOG_FILE="../data/access.log"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+LOG_FILE="$SCRIPT_DIR/../data/access.log"
 
 echo "Generating sample log entries for testing..."
 
