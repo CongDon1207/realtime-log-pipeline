@@ -17,9 +17,21 @@ services:
     container_name: fluent-bit
     restart: unless-stopped
     volumes:
-      - /var/log/nginx/access.log:/var/log/nginx/access.log:ro
+      - /d/DockerData/realtime-log-pipeline/data:/var/log/nginx:rw
     ports:
       - "2020:2020"
+    depends_on:
+      - pulsar-bridge
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+
+  pulsar-bridge:
+    build:
+      context: ./conf/pulsar-bridge
+    container_name: pulsar-bridge
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
     depends_on:
       - pulsar
     environment:

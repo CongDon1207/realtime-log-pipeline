@@ -2,7 +2,8 @@
 set -e
 
 echo "Starting Pulsar standalone..."
-# Khởi động Pulsar background
+
+# Khởi động Pulsar background với cấu hình mặc định
 bin/pulsar standalone &
 PULSAR_PID=$!
 
@@ -20,7 +21,13 @@ done
 echo "Creating topic and schema..."
 # Tạo topic và schema
 bin/pulsar-admin topics create persistent://public/default/logs-nginx-access || echo "Topic may already exist"
-bin/pulsar-admin schemas upload persistent://public/default/logs-nginx-access -f /pulsar/schema/log-nginx-access.avsc || echo "Schema upload failed, but continuing..."
+
+# Create a simple HTTP producer endpoint for Fluent Bit
+echo "Setting up HTTP producer endpoint..."
+bin/pulsar-admin namespaces set-retention public/default --size 1G --time 7d || echo "Retention policy set failed, continuing..."
+
+echo "Enabling HTTP producer on topic..."
+# Note: We'll use the built-in REST API for message publishing
 
 echo "Pulsar initialization completed. Keeping container running..."
 # Giữ container chạy
