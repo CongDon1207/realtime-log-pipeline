@@ -5,7 +5,7 @@ services:
     container_name: pulsar
     ports:
       - "6650:6650"
-      - "8081:8080"    # Thay đổi port host thành 8081
+      - "8082:8080"    # Pulsar Web Console (thay đổi để tránh xung đột)
     restart: unless-stopped
     command: ["/pulsar/init-pulsar.sh"]
 
@@ -36,3 +36,52 @@ services:
       - pulsar
     environment:
       - TZ=Asia/Ho_Chi_Minh
+
+  # Flink JobManager
+  flink-jobmanager:
+    build:
+      context: ./conf/flink
+      dockerfile: Dockerfile
+    container_name: flink-jobmanager
+    ports:
+      - "8081:8081"    # Flink Web UI
+      - "6123:6123"    # Flink RPC
+      - "9249:9249"    # Prometheus metrics
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
+      - flink-checkpoints:/tmp/flink-checkpoints
+      - flink-savepoints:/tmp/flink-savepoints
+    restart: unless-stopped
+    depends_on:
+      - pulsar
+
+  # Flink TaskManager
+  flink-taskmanager:
+    build:
+      context: ./conf/flink
+      dockerfile: Dockerfile
+    container_name: flink-taskmanager
+    command: taskmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
+      - flink-checkpoints:/tmp/flink-checkpoints
+      - flink-savepoints:/tmp/flink-savepoints
+    restart: unless-stopped
+    depends_on:
+      - flink-jobmanager
+    deploy:
+      replicas: 1  # Có thể scale up nếu cần
+
+# Volumes cho Flink persistent data
+volumes:
+  flink-checkpoints:
+    driver: local
+  flink-savepoints:
+    driver: local

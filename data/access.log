@@ -8,3 +8,9 @@
 192.168.1.108 - - [25/Jul/2025:15:20:30 +0700] "PATCH /api/update HTTP/1.1" 200 512 "https://app.com" "UpdateClient/2.0"
 test log entry
 192.168.1.100 - - [25/Jul/2025:15:57:00 +0700] "GET /api/users HTTP/1.1" 200 1234 "-" "Mozilla/5.0"
+127.0.0.1 - - [29/Jul/2025:21:31:00 +0700] "GET /test HTTP/1.1" 200 1234 "-" "Mozilla/5.0"
+192.168.1.101 - - [29/Jul/2025:21:39:00 +0700] "POST /api/user HTTP/1.1" 201 512 "http://example.com" "curl/7.68.0"
+192.168.1.102 - - [29/Jul/2025:21:41:00 +0700] "PUT /api/update HTTP/1.1" 200 256 "http://example.com" "Mozilla/5.0"
+192.168.1.103 - - [29/Jul/2025:21:42:30 +0700] "DELETE /api/item/123 HTTP/1.1" 404 128 "http://example.com" "curl/7.68.0"
+192.168.1.104 - - [29/Jul/2025:21:44:20 +0700] "GET /api/health HTTP/1.1" 200 64 "http://example.com" "HealthChecker/1.0"
+192.168.1.105 - - [29/Jul/2025:21:45:00 +0700] "POST /api/login HTTP/1.1" 200 512 "http://example.com" "UserAgent/2.0"

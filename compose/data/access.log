@@ -4,3 +4,4 @@
 192.168.1.104 - - [25/Jul/2025:15:01:00 +0700] "GET /api/test HTTP/1.1" 200 256 "https://test.com" "TestAgent/1.0"
 192.168.1.105 - - [25/Jul/2025:15:05:00 +0700] "GET /api/new-test HTTP/1.1" 200 128 "https://test.com" "TestAgent/2.0"
 192.168.1.106 - - [25/Jul/2025:15:10:00 +0700] "PUT /api/update HTTP/1.1" 200 1536 "https://admin.com" "AdminTool/3.0"
+192.168.1.100 - - [29/Jul/2025:21:38:30 +0700] "GET /api/test HTTP/1.1" 200 1024 "http://example.com" "Mozilla/5.0"

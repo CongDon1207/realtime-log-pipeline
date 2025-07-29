@@ -1,2 +1,81 @@
-# Flink Configuration (placeholder)
-# Actual configuration will be added later
+# Flink Configuration cho Real-time Log Pipeline
+# ==============================================================================
+
+# JobManager Configuration
+# ------------------------------------------------------------------------------
+jobmanager.rpc.address: flink-jobmanager
+jobmanager.rpc.port: 6123
+jobmanager.memory.process.size: 1024m
+jobmanager.memory.flink.size: 512m
+
+# TaskManager Configuration  
+# ------------------------------------------------------------------------------
+taskmanager.numberOfTaskSlots: 4
+taskmanager.memory.process.size: 2048m
+taskmanager.memory.flink.size: 1024m
+taskmanager.memory.managed.fraction: 0.4
+
+# Network Configuration
+# ------------------------------------------------------------------------------
+rest.port: 8081
+rest.address: 0.0.0.0
+rest.bind-address: 0.0.0.0
+
+# Web UI
+# ------------------------------------------------------------------------------
+web.submit.enable: true
+web.upload.dir: /tmp/flink-web-upload
+
+# Parallelism & Performance
+# ------------------------------------------------------------------------------
+parallelism.default: 2
+taskmanager.memory.network.fraction: 0.1
+taskmanager.memory.network.min: 64mb
+taskmanager.memory.network.max: 1gb
+
+# Checkpointing & State Backend
+# ------------------------------------------------------------------------------
+state.backend: filesystem
+state.checkpoints.dir: file:///tmp/flink-checkpoints
+state.savepoints.dir: file:///tmp/flink-savepoints
+execution.checkpointing.interval: 10s
+execution.checkpointing.mode: EXACTLY_ONCE
+execution.checkpointing.timeout: 600s
+execution.checkpointing.max-concurrent-checkpoints: 1
+execution.checkpointing.min-pause: 5s
+
+# High Availability (optional - có thể bật khi cần)
+# ------------------------------------------------------------------------------
+# high-availability: zookeeper
+# high-availability.zookeeper.quorum: zookeeper:2181
+# high-availability.storageDir: file:///tmp/flink-ha
+
+# Monitoring & Metrics
+# ------------------------------------------------------------------------------
+metrics.reporters: prom
+metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+metrics.reporter.prom.host: 0.0.0.0
+metrics.reporter.prom.port: 9249
+
+# JVM Options
+# ------------------------------------------------------------------------------
+env.java.opts.jobmanager: "-Dlog4j.configurationFile=file:///opt/flink/conf/log4j-console.properties"
+env.java.opts.taskmanager: "-Dlog4j.configurationFile=file:///opt/flink/conf/log4j-console.properties"
+
+# Plugin Configuration
+# ------------------------------------------------------------------------------
+plugin.dir: /opt/flink/plugins
+
+# Execution Configuration
+# ------------------------------------------------------------------------------
+execution.runtime-mode: STREAMING
+execution.buffer-timeout: 100ms
+table.exec.source.idle-timeout: 30s
+
+# Security (optional)
+# ------------------------------------------------------------------------------
+security.ssl.enabled: false
+
+# Pulsar Connector specific settings (optional tuning)
+# ------------------------------------------------------------------------------
+# Có thể thêm các cấu hình đặc biệt cho Pulsar connector nếu cần
