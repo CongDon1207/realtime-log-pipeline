@@ -1,5 +1,27 @@
--- Flink SQL job phân tích patterns traffic
+-- Flink SQL job phân tích patterns traffic từ Pulsar
 -- Top IPs, URLs, User Agents theo thời gian
+
+-- Source table sử dụng Pulsar (đã định nghĩa trong log-processing.sql)
+-- Tạo source table với Pulsar connector
+CREATE TABLE nginx_logs (
+    remote_addr STRING,
+    time_iso8601 STRING,
+    request STRING,
+    status INT,
+    body_bytes_sent BIGINT,
+    http_referer STRING,
+    http_user_agent STRING,
+    hostname STRING,
+    event_time AS TO_TIMESTAMP(time_iso8601, 'yyyy-MM-dd''T''HH:mm:ss.SSSX'),
+    WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND
+) WITH (
+    'connector' = 'pulsar',
+    'service-url' = 'pulsar://pulsar:6650',
+    'admin-url' = 'http://pulsar:8080',
+    'topic' = 'persistent://public/default/nginx-logs',
+    'value.format' = 'avro',
+    'scan.startup.mode' = 'latest'
+);
 
 -- Sink table cho traffic analysis
 CREATE TABLE traffic_analysis (

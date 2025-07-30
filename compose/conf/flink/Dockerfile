@@ -14,18 +14,14 @@ RUN apt-get update && \
 # Install PyFlink and other Python packages
 RUN pip3 install apache-flink pandas numpy
 
-# Tải tự động Pulsar connector và client JAR
+# Create lib directory and add useful connectors
 RUN mkdir -p /opt/flink/lib
 
-# Tải Pulsar client JAR - phiên bản stable 
-RUN wget -O /opt/flink/lib/pulsar-client.jar \
-    https://repo1.maven.org/maven2/org/apache/pulsar/pulsar-client/2.11.2/pulsar-client-2.11.2.jar
+# Add stable connectors (commented Pulsar - use file/kafka instead)
+# RUN wget -O /opt/flink/lib/flink-sql-connector-kafka-1.17.2.jar \
+#     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/1.17.2/flink-sql-connector-kafka-1.17.2.jar
 
-# Tải Pulsar client API JAR
-RUN wget -O /opt/flink/lib/pulsar-client-api.jar \
-    https://repo1.maven.org/maven2/org/apache/pulsar/pulsar-client-api/2.11.2/pulsar-client-api-2.11.2.jar
-
-# Note: Flink Pulsar connector sẽ được thêm thông qua job deployment
-# vì connector không có sẵn trong Maven Central cho tất cả phiên bản
+# Create data directory for file-based processing
+RUN mkdir -p /opt/flink/data
 
 WORKDIR /opt/flink
