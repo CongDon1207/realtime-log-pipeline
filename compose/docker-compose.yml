@@ -55,6 +55,7 @@ services:
       - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
+      - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro
     restart: unless-stopped
     depends_on:
       - pulsar
@@ -73,6 +74,7 @@ services:
       - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
+      - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro
     restart: unless-stopped
     depends_on:
       - flink-jobmanager
