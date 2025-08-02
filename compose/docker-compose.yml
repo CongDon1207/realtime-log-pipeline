@@ -16,8 +16,8 @@ services:
       dockerfile: Dockerfile   # Có thể bỏ qua nếu file tên mặc định
     container_name: fluent-bit
     restart: unless-stopped
-    volumes:
-      - /d/DockerData/realtime-log-pipeline/data:/var/log/nginx:rw
+    # volumes:
+      # - /d/DockerData/realtime-log-pipeline/data:/var/log/nginx:rw  # Temporarily disabled for Windows
     ports:
       - "2020:2020"
     depends_on:
@@ -52,10 +52,10 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
       - TZ=Asia/Ho_Chi_Minh
     volumes:
-      - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
+      # - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
-      - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro
+      # - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro  # Temporarily disabled for Windows
     restart: unless-stopped
     depends_on:
       - pulsar
@@ -71,19 +71,154 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
       - TZ=Asia/Ho_Chi_Minh
     volumes:
-      - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
+      # - ./conf/flink/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
-      - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro
+      # - ../scripts/flink-jobs:/opt/flink/flink-jobs:ro  # Temporarily disabled for Windows
     restart: unless-stopped
     depends_on:
       - flink-jobmanager
     deploy:
       replicas: 1  # Có thể scale up nếu cần
 
+  # MinIO Object Storage
+  minio:
+    build:
+      context: ./conf/minio
+      dockerfile: minio.Dockerfile
+    container_name: minio
+    ports:
+      - "9000:9000"    # MinIO API
+      - "9001:9001"    # MinIO Console (Web UI)
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+      - MINIO_BROWSER=on
+      - MINIO_PROMETHEUS_AUTH_TYPE=public  # Enable anonymous metrics access
+      - MINIO_PROMETHEUS_URL=http://prometheus:9090  # Prometheus endpoint for metrics
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Prometheus Monitoring System
+  prometheus:
+    build:
+      context: ./conf/prometheus
+      dockerfile: prometheus.Dockerfile
+    container_name: prometheus
+    ports:
+      - "9090:9090"    # Prometheus Web UI and API
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - prometheus-data:/prometheus
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # For Docker service discovery
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - minio
+
+  # Grafana Visualization & Dashboards
+  grafana:
+    build:
+      context: ./conf/grafana
+      dockerfile: grafana.Dockerfile
+    container_name: grafana
+    ports:
+      - "3000:3000"    # Grafana Web UI
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=http://localhost:3000/
+    volumes:
+      - grafana-data:/var/lib/grafana
+      # - ./conf/grafana/dashboards:/var/lib/grafana/dashboards:ro  # Temporarily disabled for Windows
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - prometheus
+
+  # PostgreSQL for Iceberg JDBC catalog
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=iceberg
+      - POSTGRES_USER=iceberg
+      - POSTGRES_PASSWORD=icebergpass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iceberg -d iceberg"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Trino SQL query engine with Iceberg support
+  trino:
+    build:
+      context: ./conf/trino
+      dockerfile: trino.Dockerfile
+    container_name: trino
+    ports:
+      - "8083:8080"  # Trino web UI and API
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx3g -Xms3g
+    volumes:
+      - ./conf/trino:/etc/trino:ro
+      - /tmp/trino-spill:/tmp/trino-spill
+      - /tmp/trino-cache:/tmp/trino-cache
+      - /tmp/trino-exchange:/tmp/trino-exchange
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - minio
+      - postgres
+
 # Volumes cho Flink persistent data
 volumes:
   flink-checkpoints:
     driver: local
   flink-savepoints:
+    driver: local
+  minio-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  postgres-data:
     driver: local

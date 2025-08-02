@@ -1,0 +1,14 @@
+# Dashboard provisioning configuration for Realtime Log Pipeline
+apiVersion: 1
+
+providers:
+  # Dashboard provider for realtime log pipeline
+  - name: 'realtime-log-pipeline'
+    orgId: 1
+    folder: 'Realtime Log Pipeline'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

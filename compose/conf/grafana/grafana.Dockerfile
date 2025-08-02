@@ -1,18 +1,29 @@
-# Grafana for dashboards and alerting
+# Grafana Dockerfile for Realtime Log Pipeline
 FROM grafana/grafana:latest
 
-# Install any additional Grafana plugins
-# Example: installing Prometheus data source and pie chart panel
-RUN grafana-cli plugins install grafana-piechart-panel
+# Set timezone
+ENV TZ=Asia/Ho_Chi_Minh
 
-# Environment variables can be set in docker-compose.yml
-# ENV GF_SECURITY_ADMIN_USER=admin
-# ENV GF_SECURITY_ADMIN_PASSWORD=admin
+# Install additional plugins for enhanced visualization
+RUN grafana-cli plugins install grafana-piechart-panel && \
+    grafana-cli plugins install grafana-clock-panel && \
+    grafana-cli plugins install flant-statusmap-panel
 
-# Our custom configuration will be mounted from the host
-# COPY ./provisioning /etc/grafana/provisioning
+# Copy configuration files
+COPY grafana.ini /etc/grafana/grafana.ini
+COPY provisioning/ /etc/grafana/provisioning/
 
-# Expose the Grafana web UI port
+# Create directories and copy dashboards
+USER root
+RUN mkdir -p /var/lib/grafana/dashboards
+COPY dashboards/ /var/lib/grafana/dashboards/
+
+# Switch back to grafana user
+USER grafana
+
+# Expose Grafana port
 EXPOSE 3000
 
-# The default command is sufficient and will be used
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1

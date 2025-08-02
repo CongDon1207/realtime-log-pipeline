@@ -1,11 +1,8 @@
 # Prometheus monitoring system
 FROM prom/prometheus:latest
 
-# Add any additional packages if needed
-# RUN apt-get update && apt-get install -y --no-install-recommends ...
-
-# Our custom configuration will be mounted from the host
-# COPY prometheus.yml /etc/prometheus/prometheus.yml
+# Copy our custom configuration file
+COPY prometheus.yml /etc/prometheus/prometheus.yml
 
 # Expose the Prometheus web UI and API port
 EXPOSE 9090

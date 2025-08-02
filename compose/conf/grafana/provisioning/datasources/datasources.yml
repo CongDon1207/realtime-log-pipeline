@@ -1,0 +1,48 @@
+# Datasources configuration for Realtime Log Pipeline
+apiVersion: 1
+
+datasources:
+  # Prometheus datasource for metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    basicAuth: false
+    withCredentials: false
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: GET
+      manageAlerts: true
+      alertmanagerUid: ""
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      cacheLevel: High
+      disableMetricsLookup: false
+      customQueryParameters: ""
+      httpHeaderName1: ""
+    secureJsonData:
+      httpHeaderValue1: ""
+    version: 1
+
+  # MinIO datasource (if metrics available)
+  - name: MinIO
+    type: prometheus
+    access: proxy
+    url: http://minio:9000/minio/v2/metrics/cluster
+    isDefault: false
+    editable: true
+    basicAuth: false
+    withCredentials: false
+    jsonData:
+      timeInterval: "30s"
+      queryTimeout: "60s"
+      httpMethod: GET
+      manageAlerts: false
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      cacheLevel: Medium
+      disableMetricsLookup: false
+    version: 1

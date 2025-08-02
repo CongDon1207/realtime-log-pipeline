@@ -1,5 +1,8 @@
 # MinIO Object Storage
-FROM minio/minio:latest
+FROM quay.io/minio/minio:latest
+
+# Create data directory and set permissions
+RUN mkdir -p /data && chmod 755 /data
 
 # Environment variables for MinIO will be set in docker-compose.yml
 # ENV MINIO_ROOT_USER=minioadmin

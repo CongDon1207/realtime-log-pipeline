@@ -1,2 +1,117 @@
-# Prometheus Configuration File (placeholder)
-# Actual configuration will be added later
+# Prometheus Configuration for Real-time Log Pipeline
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    monitor: 'realtime-log-pipeline'
+    environment: 'docker-compose'
+
+# Rule files (for alerting rules if needed)
+rule_files:
+  # - "alert_rules.yml"
+
+# Scrape configuration for monitoring various services
+scrape_configs:
+  # Monitor Prometheus itself
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+
+  # Monitor MinIO Object Storage
+  - job_name: 'minio'
+    scrape_interval: 15s
+    metrics_path: '/minio/v2/metrics/cluster'
+    static_configs:
+      - targets: ['minio:9000']
+        labels:
+          service: 'minio'
+          component: 'storage'
+
+  # Monitor Apache Pulsar
+  - job_name: 'pulsar-broker'
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['pulsar:8080']
+        labels:
+          service: 'pulsar'
+          component: 'messaging'
+
+  # Monitor Flink JobManager
+  - job_name: 'flink-jobmanager'
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['jobmanager:8081']
+        labels:
+          service: 'flink'
+          component: 'stream-processing'
+          role: 'jobmanager'
+
+  # Monitor Flink TaskManager
+  - job_name: 'flink-taskmanager'
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['taskmanager:8081']
+        labels:
+          service: 'flink'
+          component: 'stream-processing'
+          role: 'taskmanager'
+
+  # Monitor Fluent Bit (if metrics are exposed)
+  - job_name: 'fluent-bit'
+    scrape_interval: 30s
+    metrics_path: '/api/v1/metrics/prometheus'
+    static_configs:
+      - targets: ['fluent-bit:2020']
+        labels:
+          service: 'fluent-bit'
+          component: 'log-collection'
+
+  # Docker service discovery for automatic container monitoring
+  - job_name: 'docker-containers'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 60s
+        filters:
+          - name: 'label'
+            values: ['monitoring=enabled']
+    relabel_configs:
+      # Keep only containers with monitoring enabled
+      - source_labels: [__meta_docker_container_label_monitoring]
+        regex: enabled
+        action: keep
+      # Use container name as instance
+      - source_labels: [__meta_docker_container_name]
+        target_label: instance
+      # Add container ID as label
+      - source_labels: [__meta_docker_container_id]
+        target_label: container_id
+      # Add service name from label
+      - source_labels: [__meta_docker_container_label_service]
+        target_label: service
+        replacement: '${1}'
+
+  # Node exporter for system metrics (if available)
+  - job_name: 'node-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'node-exporter'
+          component: 'system-monitoring'
+
+  # cAdvisor for container metrics (if available)
+  - job_name: 'cadvisor'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'cadvisor'
+          component: 'container-monitoring'
